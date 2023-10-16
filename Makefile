@@ -6,3 +6,6 @@ start:
 
 start-local:
 	npm run build --prefix users && npm run start-local --prefix users
+
+start-frontend:
+	npm run start --prefix frontend
