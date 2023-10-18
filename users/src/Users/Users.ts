@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
 import Users_Table from '../db/tables/Users.js';
 
@@ -7,13 +6,8 @@ class Users {
   async add(req: Request, res: Response) {
     try {
       const { username, password, email } = req.body;
-      const candidate = await Users_Table.findOne({ where: { email } });
-      if (candidate) {
-        return res.json({ code: 2 });
-      }
-      const hashPassword = bcrypt.hashSync(password, 10);
-      const user = await Users_Table.create({ username, password: hashPassword, email });
-      res.json({ code: 1, user });
+      const user = await Users_Table.create({ username, password, email });
+      res.json(user);
     } catch (e) {
       console.log(e);
       res.sendStatus(500);
@@ -22,8 +16,9 @@ class Users {
 
   async update(req: Request, res: Response) {
     try {
-      const { id, ...values } = req.body;
-      await Users_Table.update(values, { where: { id } });
+      const { id } = req.params;
+      const changedValue: object = req.body;
+      await Users_Table.update(changedValue, { where: { id } });
       res.json({ code: 1 });
     } catch (e) {
       console.log(e);
@@ -33,7 +28,7 @@ class Users {
 
   async getAll(req: Request, res: Response) {
     try {
-      const users = Users_Table.findAll();
+      const users = await Users_Table.findAll();
       res.json({ code: 1, users });
     } catch (e) {
       console.log(e);

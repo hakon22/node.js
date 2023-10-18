@@ -7,8 +7,9 @@ interface ApiUrl {
 export default {
   homePage: '/',
   logsPage: '/logs',
-  usersPage: '/all',
+  usersPage: '/users/:id',
+  notFoundPage: '*',
   addUser: [apiPath, 'users/add'].join('/'),
-  updateUser: [apiPath, 'users/update'].join('/'),
+  updateUser: [apiPath, 'users/update/'].join('/'),
   allUsers: [apiPath, 'users/all'].join('/'),
 } as ApiUrl;

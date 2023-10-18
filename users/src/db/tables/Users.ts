@@ -2,7 +2,7 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOpt
 import { db } from '../connect.js';
 
 interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttributes<UserModel>> {
-  id: CreationOptional<number>;
+  id?: CreationOptional<number>;
   username: string;
   password: string;
   email: string;
@@ -11,10 +11,6 @@ interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttri
 const Users = db.define<UserModel>(
   'Users',
   {
-    id: {
-      primaryKey: true,
-      type: DataTypes.INTEGER,
-    },
     username: {
       type: DataTypes.STRING,
       allowNull: false,
