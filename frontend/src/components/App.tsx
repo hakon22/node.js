@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Navbar, Container, Button } from 'react-bootstrap';
 import { useEffect } from 'react';
 import { useAppDispatch } from '../utilities/hooks';
 import { fetchUsers } from '../slices/userSlice';
@@ -16,16 +17,24 @@ const App = () => {
   }, [dispatch]);
 
   return (
-    <div className="container d-flex justify-content-center align-items-center flex-column">
-      <BrowserRouter basename="/">
-        <Routes>
-          <Route path={routes.homePage} element={<StartPage />} />
-          <Route path={routes.usersPage} element={<UsersPage />} />
-          <Route path={routes.logsPage} element={<LogsPage />} />
-          <Route path={routes.notFoundPage} element={<Page404 />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <>
+      <Navbar className="bg-body-tertiary">
+        <Container className="justify-content-center gap-5">
+          <Button href={routes.homePage} variant="outline-primary">Главная</Button>
+          <Button href={routes.logsPage} variant="outline-primary">Логи</Button>
+        </Container>
+      </Navbar>
+      <Container className="d-flex justify-content-center align-items-center flex-column">
+        <BrowserRouter basename="/">
+          <Routes>
+            <Route path={routes.homePage} element={<StartPage />} />
+            <Route path={routes.usersPage} element={<UsersPage />} />
+            <Route path={routes.logsPage} element={<LogsPage />} />
+            <Route path={routes.notFoundPage} element={<Page404 />} />
+          </Routes>
+        </BrowserRouter>
+      </Container>
+    </>
   );
 };
 

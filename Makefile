@@ -1,11 +1,14 @@
 install:
-	npm -C users ci && npm -C logs ci && npm -C users/frontend ci && npm -C logs/frontend ci
+	npm -C users ci && npm -C logs ci && npm -C frontend ci
 
 start:
-	npx pm2 start "npm run start" && npm run snap --prefix frontend && pm2 delete 0 && pm2 start src/reCash.js && npm run start
+	cd users && pm2 start npm --name "app name" -- start "start-local"
 
 start-local:
 	npm run build --prefix users && npm run start-local --prefix users
+
+start-local-logs:
+	npm run start-local --prefix logs
 
 start-frontend:
 	npm run start --prefix frontend

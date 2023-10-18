@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
+import axios from 'axios';
 import Users_Table from '../db/tables/Users.js';
 
 class Users {
 
   async add(req: Request, res: Response) {
     try {
-      const { username, password, email } = req.body;
-      const user = await Users_Table.create({ username, password, email });
+      const user = await Users_Table.create(req.body);
+      const { id, username, email, password } = user;
+      await axios.post('http://localhost:3006/api/logs/create', { id, username, email, password });
       res.json(user);
     } catch (e) {
       console.log(e);
@@ -19,6 +21,7 @@ class Users {
       const { id } = req.params;
       const changedValue: object = req.body;
       await Users_Table.update(changedValue, { where: { id } });
+      await axios.post('http://localhost:3006/api/logs/update', { id, changedValue });
       res.json({ code: 1 });
     } catch (e) {
       console.log(e);

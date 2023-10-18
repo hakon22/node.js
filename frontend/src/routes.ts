@@ -12,4 +12,5 @@ export default {
   addUser: [apiPath, 'users/add'].join('/'),
   updateUser: [apiPath, 'users/update/'].join('/'),
   allUsers: [apiPath, 'users/all'].join('/'),
+  allLogs: [apiPath, 'logs/all'].join('/'),
 } as ApiUrl;

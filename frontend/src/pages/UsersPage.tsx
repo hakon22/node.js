@@ -29,10 +29,7 @@ const UsersPage = () => {
         <Card.Header className="fs-4 col-12">{user.username}</Card.Header>
         <Card.Body className="col-12 col-xl-8 d-flex justify-content-center">
           <UpdateUser
-            id={user.id}
-            username={user.username}
-            email={user.email}
-            password={user.password}
+            user={user}
           />
         </Card.Body>
       </Card>

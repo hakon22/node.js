@@ -4,6 +4,7 @@ import {
 } from '@reduxjs/toolkit';
 import type { RootState } from './index';
 import type { User } from '../types/User';
+import type { InitialStateType } from '../types/InitialState';
 import routes from '../routes';
 
 export const fetchUsers = createAsyncThunk(
@@ -16,12 +17,6 @@ export const fetchUsers = createAsyncThunk(
 
 const userAdapter = createEntityAdapter<User>();
 
-type InitialStateType = {
-  loadingStatus: 'idle' | 'loading' | 'finish' | 'failed';
-  error: string | null | undefined;
-  [key: string]: string | null | undefined;
-};
-
 const initialState: InitialStateType = {
   loadingStatus: 'idle',
   error: null,
@@ -32,7 +27,6 @@ const userSlice = createSlice({
   initialState: userAdapter.getInitialState(initialState),
   reducers: {
     userAdd: userAdapter.addOne,
-    userRemove: userAdapter.removeOne,
     userUpdate: userAdapter.updateOne,
   },
   extraReducers: (builder) => {
@@ -56,7 +50,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { userAdd, userRemove, userUpdate } = userSlice.actions;
+export const { userAdd, userUpdate } = userSlice.actions;
 
 export const selectors = userAdapter.getSelectors<RootState>((state) => state.users);
 

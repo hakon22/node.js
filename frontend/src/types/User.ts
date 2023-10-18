@@ -11,8 +11,5 @@ export type User = FormikUser & {
 }
 
 export type PropsUser = {
-  id: number;
-  username: string;
-  email: string;
-  password: string;
+  user: User;
 }

@@ -16,11 +16,13 @@ import { useAppDispatch } from '../utilities/hooks';
 import formClass from '../utilities/formClass';
 import type { FormikUser, PropsUser } from '../types/User';
 
-const ChangeData = ({
-  id, username, email, password,
-}: PropsUser) => {
+const ChangeData = ({ user }: PropsUser) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const {
+    id, username, email, password,
+  } = user;
 
   const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -35,9 +37,7 @@ const ChangeData = ({
   };
 
   const setDefaultValue = (field: string, form: FormikContextType<FormikUser>) => {
-    if (field !== 'password') {
-      form.resetForm({ values: initialValues, submitCount: 0 });
-    }
+    form.resetForm({ values: initialValues, submitCount: 0 });
     if (field === 'username') {
       setUsernameEdit(false);
     } else if (field === 'email') {
@@ -73,9 +73,7 @@ const ChangeData = ({
           const field = Object.keys(changedValue)[0];
           dispatch(userUpdate({
             id,
-            changes: {
-              username, password, email, ...changedValue,
-            },
+            changes: { ...user, ...changedValue },
           }));
           setDefaultValue(field, formik);
           notify('Данные успешно изменены', 'success');

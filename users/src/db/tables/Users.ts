@@ -6,6 +6,8 @@ interface UserModel extends Model<InferAttributes<UserModel>, InferCreationAttri
   username: string;
   password: string;
   email: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const Users = db.define<UserModel>(

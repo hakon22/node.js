@@ -13,7 +13,7 @@ const StartPage = () => {
   const users: User[] = useAppSelector(selectors.selectAll);
 
   return (
-    <div className="col-12 col-md-8 mt-4">
+    <div className="col-12 col-md-8 my-4">
       <Helmet>
         <title>Главная</title>
         <meta name="description" content="Главная страница" />
@@ -26,13 +26,13 @@ const StartPage = () => {
         </Card.Body>
       </Card>
       {loadingStatus !== 'finish' && (
-        <div className="position-absolute bottom-50 end-50">
+        <div className="text-center">
           <Spinner animation="border" variant="primary" role="status" />
         </div>
       )}
       <Table striped bordered hover>
         <thead>
-          <tr>
+          <tr className="text-center">
             <th>#</th>
             <th>Имя</th>
             <th>Почта</th>
@@ -49,12 +49,12 @@ const StartPage = () => {
             const updatedDate = new Date(updatedAt).toLocaleDateString('ru-RU');
             return (
               <tr key={id} onClick={() => navigate(`/users/${id}`)} role="button">
-                <td>{id}</td>
+                <td className="text-center">{id}</td>
                 <td>{username}</td>
                 <td>{email}</td>
                 <td>{password}</td>
-                <td>{createdDate}</td>
-                <td>{updatedDate}</td>
+                <td className="text-center">{createdDate}</td>
+                <td className="text-center">{updatedDate}</td>
               </tr>
             );
           })}
