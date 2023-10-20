@@ -20,7 +20,7 @@ const LogsPage = () => {
   const startLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
 
   const logs = useMemo(
-    () => (numerId === 0 || numerId === 1
+    () => (numerId === 0 || numerId === -1
       ? startLogs
       : startLogs.filter((log) => log.userId === numerId)),
     [numerId, loadingStatus],
@@ -69,7 +69,7 @@ const LogsPage = () => {
     onSubmit: async ({ id }) => {
       try {
         if (!id) {
-          setNumerId(1);
+          setNumerId(-1);
         } else {
           setNumerId(Number(id));
         }
