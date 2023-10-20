@@ -2,6 +2,7 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import { Form, Button } from 'react-bootstrap';
 import { userAdd } from '../slices/userSlice';
+import { logAdd } from '../slices/logsSlice';
 import routes from '../routes';
 import createUserValidation from '../validations/validations';
 import { useAppDispatch } from '../utilities/hooks';
@@ -22,7 +23,8 @@ const CreateUser = () => {
     onSubmit: async (values, { resetForm }) => {
       try {
         const { data } = await axios.post(routes.addUser, values);
-        dispatch(userAdd(data));
+        dispatch(userAdd(data.user));
+        dispatch(logAdd(data.log));
         resetForm();
         toast('Пользователь добавлен', 'success');
       } catch (e) {

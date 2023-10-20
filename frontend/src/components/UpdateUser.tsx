@@ -10,6 +10,7 @@ import axios from 'axios';
 import { capitalize, toLower } from 'lodash';
 import notify from '../utilities/toast';
 import { userUpdate } from '../slices/userSlice';
+import { logAdd } from '../slices/logsSlice';
 import createUserValidation from '../validations/validations';
 import routes from '../routes';
 import { useAppDispatch } from '../utilities/hooks';
@@ -75,6 +76,7 @@ const ChangeData = ({ user }: PropsUser) => {
             id,
             changes: { ...user, ...changedValue },
           }));
+          dispatch(logAdd(data.log));
           setDefaultValue(field, formik);
           notify('Данные успешно изменены', 'success');
         }
@@ -315,7 +317,7 @@ const ChangeData = ({ user }: PropsUser) => {
           </Form.Control.Feedback>
         </InputGroup>
       </Form.Group>
-      <Button size="sm" variant="warning" className="mt-4" onClick={() => navigate(routes.homePage)}>На главную</Button>
+      <Button size="sm" variant="warning" className="mt-4" onClick={() => navigate(-1)}>Назад</Button>
     </Form>
   );
 };

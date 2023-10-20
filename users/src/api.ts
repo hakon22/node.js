@@ -3,8 +3,10 @@ import Users from './Users/Users.js';
 
 const router = express.Router();
 
-router.post('/api/users/add', Users.add);
-router.post('/api/users/update/:id', Users.update);
-router.get('/api/users/all', Users.getAll);
+const apiPath = '/node.js/api';
+
+router.post(`${apiPath}/users/add`, Users.add);
+router.post(`${apiPath}/users/update/:id`, Users.update);
+router.get(`${apiPath}/users/all`, Users.getAll);
 
 export default router;

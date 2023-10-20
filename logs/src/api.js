@@ -3,8 +3,10 @@ import Logs from './Logs/Logs.js';
 
 const router = express.Router();
 
-router.post('/api/logs/create', Logs.userCreate);
-router.post('/api/logs/update', Logs.userUpdate);
-router.get('/api/logs/all', Logs.getAll);
+const apiPath = '/node.js/api';
+
+router.post(`${apiPath}/logs/create`, Logs.userCreate);
+router.post(`${apiPath}/logs/update`, Logs.userUpdate);
+router.get(`${apiPath}/logs/all`, Logs.getAll);
 
 export default router;

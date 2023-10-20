@@ -13,3 +13,7 @@ export type User = FormikUser & {
 export type PropsUser = {
   user: User;
 }
+
+export type PropsUsers = {
+  users: User[];
+}

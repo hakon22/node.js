@@ -1,22 +1,40 @@
 import { Helmet } from 'react-helmet';
-import { useEffect, useState, useRef } from 'react';
+import { useFormik } from 'formik';
+import {
+  useEffect, useState, useRef, useMemo,
+} from 'react';
 import { Table, Spinner, Pagination } from 'react-bootstrap';
-import { useAppSelector, useAppDispatch } from '../utilities/hooks';
-import { fetchLogs, selectors } from '../slices/logsSlice';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../utilities/hooks';
+import { selectors } from '../slices/logsSlice';
 import type { Log } from '../types/Log';
 
 const LogsPage = () => {
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const scrollRef = useRef<HTMLTableElement>(null);
 
   const { loadingStatus } = useAppSelector((state) => state.logs);
-  const logs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
+  const [numerId, setNumerId] = useState(0);
+
+  const startLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
+
+  const logs = useMemo(
+    () => (numerId === 0 ? startLogs : startLogs.filter((log) => log.userId === numerId)),
+    [numerId, loadingStatus],
+  );
+
+  const [urlParams] = useSearchParams();
+  const urlPage = Number(urlParams.get('page'));
 
   const rowsPerPage: number = 10;
-  const startRows = logs.slice(0, rowsPerPage);
   const lastPage = Math.ceil(logs.length / rowsPerPage);
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const paramsCheck = (value: number) => (value <= lastPage && value > 0 ? value : 1);
+
+  const pageParams: number = paramsCheck(urlPage);
+  const startRows = logs.slice(pageParams - 1, rowsPerPage);
+  const [currentPage, setCurrentPage] = useState(pageParams);
   const [showedData, setShowData] = useState(startRows);
 
   const handleClick = (page: number) => {
@@ -25,6 +43,7 @@ const LogsPage = () => {
     const firstIndex = pageIndex * rowsPerPage;
     const lastIndex = pageIndex * rowsPerPage + rowsPerPage;
     setShowData(logs.slice(firstIndex, lastIndex));
+    navigate(`?page=${page}`);
   };
 
   const items: JSX.Element[] = [];
@@ -41,19 +60,37 @@ const LogsPage = () => {
     );
   }
 
-  useEffect(() => {
-    dispatch(fetchLogs());
-  }, [dispatch]);
+  const formik = useFormik<{ id: string | number | readonly string[] | undefined}>({
+    initialValues: {
+      id: '',
+    },
+    onSubmit: async ({ id }) => {
+      try {
+        if (!id) {
+          setNumerId(0);
+        } else {
+          setNumerId(Number(id));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+  });
 
   useEffect(() => {
-    if (loadingStatus === 'finish' && !showedData.length) {
-      setShowData(startRows);
+    if ((paramsCheck(pageParams) === 1 && urlPage !== 1) || !urlPage) {
+      navigate('?page=1');
     }
-  }, [loadingStatus, showedData.length, startRows]);
+    handleClick(pageParams);
+  }, [loadingStatus]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView();
   }, [currentPage]);
+
+  useEffect(() => {
+    handleClick(1);
+  }, [numerId]);
 
   return loadingStatus !== 'finish' ? (
     <div className="position-absolute top-50 left-50">
@@ -70,7 +107,22 @@ const LogsPage = () => {
         <thead>
           <tr className="text-center">
             <th>#</th>
-            <th>id</th>
+            <th>
+              <form onSubmit={formik.handleSubmit}>
+                <label htmlFor="id" className="hidden">Введите id пользователя</label>
+                <input
+                  type="search"
+                  className="w-100 px-2 placeholder-center"
+                  placeholder="id"
+                  name="id"
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    formik.setFieldValue('id', e.target.value.replace(/[^\d]/g, ''));
+                  }}
+                  value={formik.values.id}
+                />
+              </form>
+            </th>
             <th className="col-8">Сообщение</th>
             <th className="col-3">Дата создания</th>
           </tr>

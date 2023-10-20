@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import 'dotenv/config';
 import express from 'express';
 import { dirname, join } from 'path';
@@ -9,11 +10,14 @@ import router from './src/api.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-// eslint-disable-next-line no-undef
+
 const port = process.env.PORT || 3001;
 
-const buildPath = join(__dirname, '..', '..', 'frontend', 'public');
+const buildPath = process.env.DB === 'LOCAL'
+  ? join(__dirname, '..', '..', 'frontend', 'public')
+  : join(__dirname, '..', 'build');
 
+app.use(express.static(buildPath));
 app.use(express.json());
 app.use(cors());
 app.use(router);

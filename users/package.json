@@ -6,9 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "cross-env DB='HOST' node dist/server.js",
-    "start-local": "cross-env DB='LOCAL' node dist/server.js",
-    "prestart": "npm run build"
+    "start": "cross-env DB='HOST' node server.js",
+    "start-local": "cross-env DB='LOCAL' node dist/server.js"
   },
   "author": "",
   "license": "ISC",

@@ -11,6 +11,7 @@ export const fetchLogs = createAsyncThunk(
   'logs/fetchLogs',
   async () => {
     const response = await axios.get(`http://localhost:3006${routes.allLogs}`);
+    // const response = await axios.get(routes.allLogs);
     return response.data;
   },
 );
@@ -25,7 +26,9 @@ const initialState: InitialStateType = {
 const logsSlice = createSlice({
   name: 'users',
   initialState: logsAdapter.getInitialState(initialState),
-  reducers: {},
+  reducers: {
+    logAdd: logsAdapter.addOne,
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchLogs.pending, (state) => {
@@ -46,6 +49,8 @@ const logsSlice = createSlice({
       });
   },
 });
+
+export const { logAdd } = logsSlice.actions;
 
 export const selectors = logsAdapter.getSelectors<RootState>((state) => state.logs);
 
