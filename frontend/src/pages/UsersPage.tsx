@@ -50,6 +50,12 @@ const UsersPage = ({ users }: PropsUsers) => {
   }
 
   useEffect(() => {
+    if (pageParams > 1) {
+      handleClick(pageParams);
+    }
+  }, [pageParams]);
+
+  useEffect(() => {
     if (loadingStatus === 'finish' && !showedData.length) {
       if ((paramsCheck(pageParams) === 1 && urlPage !== 1) || !urlPage) {
         navigate('?page=1');

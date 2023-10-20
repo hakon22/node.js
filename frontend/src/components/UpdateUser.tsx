@@ -17,7 +17,7 @@ import { useAppDispatch } from '../utilities/hooks';
 import formClass from '../utilities/formClass';
 import type { FormikUser, PropsUser } from '../types/User';
 
-const ChangeData = ({ user }: PropsUser) => {
+const UpdateUser = ({ user }: PropsUser) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -322,4 +322,4 @@ const ChangeData = ({ user }: PropsUser) => {
   );
 };
 
-export default ChangeData;
+export default UpdateUser;
