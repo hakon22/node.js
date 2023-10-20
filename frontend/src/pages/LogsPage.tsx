@@ -20,7 +20,9 @@ const LogsPage = () => {
   const startLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
 
   const logs = useMemo(
-    () => (numerId === 0 ? startLogs : startLogs.filter((log) => log.userId === numerId)),
+    () => (numerId === 0 || numerId === 1
+      ? startLogs
+      : startLogs.filter((log) => log.userId === numerId)),
     [numerId, loadingStatus],
   );
 
@@ -67,7 +69,7 @@ const LogsPage = () => {
     onSubmit: async ({ id }) => {
       try {
         if (!id) {
-          setNumerId(0);
+          setNumerId(1);
         } else {
           setNumerId(Number(id));
         }
@@ -78,19 +80,23 @@ const LogsPage = () => {
   });
 
   useEffect(() => {
-    if ((paramsCheck(pageParams) === 1 && urlPage !== 1) || !urlPage) {
-      navigate('?page=1');
+    if (numerId) {
+      handleClick(1);
     }
-    handleClick(pageParams);
+  }, [numerId]);
+
+  useEffect(() => {
+    if (loadingStatus === 'finish' && !showedData.length) {
+      if ((paramsCheck(pageParams) === 1 && urlPage !== 1) || !urlPage) {
+        navigate('?page=1');
+      }
+      handleClick(pageParams);
+    }
   }, [loadingStatus]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView();
   }, [currentPage]);
-
-  useEffect(() => {
-    handleClick(1);
-  }, [numerId]);
 
   return loadingStatus !== 'finish' ? (
     <div className="position-absolute top-50 left-50">

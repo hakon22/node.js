@@ -7,11 +7,14 @@ import type { Log } from '../types/Log';
 import type { InitialStateType } from '../types/InitialState';
 import routes from '../routes';
 
+const { hostname } = window.location;
+
 export const fetchLogs = createAsyncThunk(
   'logs/fetchLogs',
   async () => {
-    const response = await axios.get(`http://localhost:3006${routes.allLogs}`);
-    // const response = await axios.get(routes.allLogs);
+    const response = hostname === 'localhost'
+      ? await axios.get(`http://localhost:3006${routes.allLogs}`)
+      : await axios.get(routes.allLogs);
     return response.data;
   },
 );
