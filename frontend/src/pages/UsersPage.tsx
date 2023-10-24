@@ -69,7 +69,7 @@ const UsersPage = ({ users }: PropsUsers) => {
   }, [currentPage]);
 
   return loadingStatus !== 'finish' ? (
-    <div className="text-center">
+    <div className="position-absolute top-50 left-50">
       <Spinner animation="border" variant="primary" role="status" />
     </div>
   ) : (

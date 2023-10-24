@@ -15,12 +15,14 @@ export const fetchUsers = createAsyncThunk(
   },
 );
 
-const userAdapter = createEntityAdapter<User>();
+export const userAdapter = createEntityAdapter<User>();
 
-const initialState: InitialStateType = {
+export const initialState: InitialStateType = {
   loadingStatus: 'idle',
   error: null,
 };
+
+export const fetchFulfilled = fetchUsers.fulfilled;
 
 const userSlice = createSlice({
   name: 'users',

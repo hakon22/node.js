@@ -155,6 +155,7 @@ const UpdateUser = ({ user }: PropsUser) => {
             autoComplete="on"
             type="text"
             value={formik.values.username}
+            data-testid="username-field"
             name="username"
             placeholder="Введите имя"
             disabled={!usernameEdit}
@@ -163,6 +164,7 @@ const UpdateUser = ({ user }: PropsUser) => {
             <InputGroup.Text
               id="username"
               as="button"
+              data-testid="username"
               type="submit"
               disabled={formik.isSubmitting}
             >
@@ -183,6 +185,7 @@ const UpdateUser = ({ user }: PropsUser) => {
             <InputGroup.Text
               id="username"
               role="button"
+              data-testid="username"
               onClick={() => setUsernameEdit(true)}
             >
               <Pencil />
@@ -214,6 +217,7 @@ const UpdateUser = ({ user }: PropsUser) => {
             autoComplete="on"
             type="email"
             value={formik.values.email}
+            data-testid="email-field"
             name="email"
             placeholder="Введите почту"
             disabled={!emailEdit}
@@ -221,6 +225,7 @@ const UpdateUser = ({ user }: PropsUser) => {
           {emailEdit ? (
             <InputGroup.Text
               id="email"
+              data-testid="email"
               as="button"
               type="submit"
               disabled={formik.isSubmitting}
@@ -241,6 +246,7 @@ const UpdateUser = ({ user }: PropsUser) => {
           ) : (
             <InputGroup.Text
               id="email"
+              data-testid="email"
               role="button"
               onClick={() => setEmailEdit(true)}
             >
@@ -273,6 +279,7 @@ const UpdateUser = ({ user }: PropsUser) => {
             autoComplete="off"
             type="password"
             value={formik.values.password}
+            data-testid="password-field"
             placeholder="Введите пароль"
             name="password"
             disabled={!passwordEdit}
@@ -280,6 +287,7 @@ const UpdateUser = ({ user }: PropsUser) => {
           {passwordEdit ? (
             <InputGroup.Text
               id="password"
+              data-testid="password"
               as="button"
               type="submit"
               disabled={formik.isSubmitting}
@@ -300,6 +308,7 @@ const UpdateUser = ({ user }: PropsUser) => {
           ) : (
             <InputGroup.Text
               id="password"
+              data-testid="password"
               role="button"
               onClick={() => setPasswordEdit(true)}
             >
@@ -308,7 +317,7 @@ const UpdateUser = ({ user }: PropsUser) => {
           )}
           {passwordEdit
           && (
-          <InputGroup.Text role="button" onClick={() => setDefaultValue('password', formik)}>
+          <InputGroup.Text role="button" data-testid="password-close" onClick={() => setDefaultValue('password', formik)}>
             <XLg className="fw-bold fs-5 text-danger" />
           </InputGroup.Text>
           )}
