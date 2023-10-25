@@ -120,7 +120,7 @@ const LogsPage = () => {
                   type="search"
                   className="w-100 px-2 placeholder-center"
                   placeholder="id"
-                  name="id"
+                  id="id"
                   onChange={(e) => {
                     formik.handleChange(e);
                     formik.setFieldValue('id', e.target.value.replace(/[^\d]/g, ''));
@@ -139,7 +139,7 @@ const LogsPage = () => {
           }) => {
             const createdDateTime = new Date(createdAt).toLocaleString('ru-RU');
             return (
-              <tr key={id}>
+              <tr key={id} data-testid="tr">
                 <td className="text-center">{id}</td>
                 <td className="text-center">{userId}</td>
                 <td>{message}</td>

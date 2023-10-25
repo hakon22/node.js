@@ -18,3 +18,11 @@ start-logs:
 
 start-frontend:
 	npm run start --prefix frontend
+
+test:
+	npm test --prefix frontend
+
+test-coverage:
+	npm test -- --coverage --coverageProvider=v8 --prefix frontend
+
+.PHONY: test

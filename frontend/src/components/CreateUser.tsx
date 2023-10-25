@@ -1,5 +1,6 @@
 import { useFormik } from 'formik';
 import axios from 'axios';
+import { capitalize, toLower } from 'lodash';
 import { Form, Button } from 'react-bootstrap';
 import { userAdd } from '../slices/userSlice';
 import { logAdd } from '../slices/logsSlice';
@@ -22,6 +23,12 @@ const CreateUser = () => {
     validationSchema: createUserValidation,
     onSubmit: async (values, { resetForm }) => {
       try {
+        if (values.username) {
+          values.username = capitalize(values.username);
+        }
+        if (values.email) {
+          values.email = toLower(values.email);
+        }
         const { data } = await axios.post(routes.addUser, values);
         dispatch(userAdd(data.user));
         dispatch(logAdd(data.log));
@@ -52,7 +59,7 @@ const CreateUser = () => {
             name="username"
             placeholder="Введите имя"
           />
-          <Form.Control.Feedback type="invalid" tooltip>
+          <Form.Control.Feedback type="invalid" data-testid="username-invalid" tooltip>
             {formik.errors.username}
           </Form.Control.Feedback>
         </div>
@@ -70,7 +77,7 @@ const CreateUser = () => {
             name="email"
             placeholder="Введите почту"
           />
-          <Form.Control.Feedback type="invalid" tooltip>
+          <Form.Control.Feedback type="invalid" data-testid="email-invalid" tooltip>
             {formik.errors.email}
           </Form.Control.Feedback>
         </div>
@@ -88,7 +95,7 @@ const CreateUser = () => {
             placeholder="Введите пароль"
             name="password"
           />
-          <Form.Control.Feedback type="invalid" tooltip>
+          <Form.Control.Feedback type="invalid" data-testid="password-invalid" tooltip>
             {formik.errors.password}
           </Form.Control.Feedback>
         </div>
