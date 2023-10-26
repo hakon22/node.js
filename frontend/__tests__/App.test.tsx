@@ -306,7 +306,7 @@ describe('testing searchForId in logs', () => {
 
     const inputSearch = screen.getByLabelText('Введите id пользователя');
 
-    await userEvent.type(inputSearch, '-1');
+    await userEvent.clear(inputSearch);
     await userEvent.keyboard('{Enter}');
 
     await waitFor(async () => {

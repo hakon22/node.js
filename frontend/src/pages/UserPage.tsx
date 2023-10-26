@@ -34,7 +34,7 @@ const UserPage = () => {
         </Card.Body>
       </Card>
     </div>
-  ) : !user && loadingStatus === 'finish' ? (<Navigate to={routes.UsersPage} />) : null;
+  ) : !user && loadingStatus === 'finish' ? (<Navigate to={routes.usersPage} />) : null;
 };
 
 export default UserPage;

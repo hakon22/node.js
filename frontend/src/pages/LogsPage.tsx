@@ -1,66 +1,26 @@
 import { Helmet } from 'react-helmet';
 import { useFormik } from 'formik';
-import {
-  useEffect, useState, useRef, useMemo,
-} from 'react';
-import { Table, Spinner, Pagination } from 'react-bootstrap';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useState, useRef, useMemo } from 'react';
+import { Table, Spinner } from 'react-bootstrap';
+import Pagination from '../components/Pagination';
 import { useAppSelector } from '../utilities/hooks';
 import { selectors } from '../slices/logsSlice';
 import type { Log } from '../types/Log';
 
 const LogsPage = () => {
-  const navigate = useNavigate();
-
   const scrollRef = useRef<HTMLTableElement>(null);
 
   const { loadingStatus } = useAppSelector((state) => state.logs);
-  const [numerId, setNumerId] = useState(0);
+  const [searchId, setSearchId] = useState(0);
 
-  const startLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
+  const sortedLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
 
   const logs = useMemo(
-    () => (numerId === 0 || numerId === -1
-      ? startLogs
-      : startLogs.filter((log) => log.userId === numerId)),
-    [numerId, loadingStatus],
+    () => (!searchId ? sortedLogs : sortedLogs.filter((log) => log.userId === searchId)),
+    [searchId, loadingStatus],
   );
 
-  const [urlParams] = useSearchParams();
-  const urlPage = Number(urlParams.get('page'));
-
-  const rowsPerPage: number = 10;
-  const lastPage = Math.ceil(logs.length / rowsPerPage);
-
-  const paramsCheck = (value: number) => (value <= lastPage && value > 0 ? value : 1);
-
-  const pageParams: number = paramsCheck(urlPage);
-  const startRows = logs.slice(pageParams - 1, rowsPerPage);
-  const [currentPage, setCurrentPage] = useState(pageParams);
-  const [showedData, setShowData] = useState(startRows);
-
-  const handleClick = (page: number) => {
-    setCurrentPage(page);
-    const pageIndex = page - 1;
-    const firstIndex = pageIndex * rowsPerPage;
-    const lastIndex = pageIndex * rowsPerPage + rowsPerPage;
-    setShowData(logs.slice(firstIndex, lastIndex));
-    navigate(`?page=${page}`);
-  };
-
-  const items: JSX.Element[] = [];
-
-  for (let number = 1; number <= lastPage; number += 1) {
-    items.push(
-      <Pagination.Item
-        key={number}
-        active={number === currentPage}
-        onClick={() => handleClick(number)}
-      >
-        {number}
-      </Pagination.Item>,
-    );
-  }
+  const [showedData, setShowData] = useState<Log[]>(logs.slice(0, 10));
 
   const formik = useFormik<{ id: string | number | readonly string[] | undefined}>({
     initialValues: {
@@ -69,34 +29,15 @@ const LogsPage = () => {
     onSubmit: async ({ id }) => {
       try {
         if (!id) {
-          setNumerId(-1);
+          setSearchId(0);
         } else {
-          setNumerId(Number(id));
+          setSearchId(Number(id));
         }
       } catch (e) {
         console.log(e);
       }
     },
   });
-
-  useEffect(() => {
-    if (numerId) {
-      handleClick(1);
-    }
-  }, [numerId]);
-
-  useEffect(() => {
-    if (loadingStatus === 'finish' && !showedData.length) {
-      if ((paramsCheck(pageParams) === 1 && urlPage !== 1) || !urlPage) {
-        navigate('?page=1');
-      }
-      handleClick(pageParams);
-    }
-  }, [loadingStatus]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView();
-  }, [currentPage]);
 
   return loadingStatus !== 'finish' ? (
     <div className="position-absolute top-50 left-50">
@@ -149,7 +90,15 @@ const LogsPage = () => {
           })}
         </tbody>
       </Table>
-      <Pagination className="d-flex justify-content-center align-items-center">{items}</Pagination>
+      <Pagination
+        data={logs}
+        showedData={showedData}
+        setShowData={setShowData}
+        rowsPerPage={10}
+        scrollRef={scrollRef}
+        loadingStatus={loadingStatus}
+        searchId={searchId}
+      />
     </div>
   );
 };

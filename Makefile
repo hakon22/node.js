@@ -23,6 +23,6 @@ test:
 	npm test --prefix frontend
 
 test-coverage:
-	npm test -- --coverage --coverageProvider=v8 --prefix frontend
+	npm test --prefix frontend -- --coverage --coverageProvider=v8
 
 .PHONY: test
