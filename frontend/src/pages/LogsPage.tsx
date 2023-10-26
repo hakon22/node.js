@@ -11,7 +11,7 @@ const LogsPage = () => {
   const scrollRef = useRef<HTMLTableElement>(null);
 
   const { loadingStatus } = useAppSelector((state) => state.logs);
-  const [searchId, setSearchId] = useState(0);
+  const [searchId, setSearchId] = useState<undefined | number>(undefined);
 
   const sortedLogs: Log[] = useAppSelector(selectors.selectAll).sort((a, b) => b.id - a.id);
 
