@@ -27,5 +27,5 @@ jobs:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
       with:
           coverageCommand: make test-coverage
-          coverageLocations: ${{github.workspace}}/*.lcov:lcov
+          coverageLocations: ${{github.workspace}}/frontend/coverage/lcov.info:lcov
           debug: true
