@@ -1,8 +1,8 @@
 import { Table, Spinner } from 'react-bootstrap';
-import { Helmet } from 'react-helmet';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../components/Pagination';
+import Helmet from '../components/Helmet';
 import { useAppSelector } from '../utilities/hooks';
 import type { PropsUsers, User } from '../types/User';
 
@@ -22,11 +22,7 @@ const UsersPage = ({ users }: PropsUsers) => {
     </div>
   ) : (
     <div className="col-12 my-4">
-      <Helmet>
-        <title>Пользователи</title>
-        <meta name="description" content="Страница с пользователями" />
-        <link rel="canonical" href={window.location.href} />
-      </Helmet>
+      <Helmet title="Пользователи" description="Страница с пользователями" />
       <Table striped bordered hover ref={scrollRef}>
         <thead>
           <tr className="text-center">

@@ -2,6 +2,7 @@ export type FormikUser = {
   username: string;
   email: string;
   password: string;
+  [key: string]: string;
 }
 
 export type User = FormikUser & {

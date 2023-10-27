@@ -1,8 +1,8 @@
-import { Helmet } from 'react-helmet';
 import { useFormik } from 'formik';
 import { useState, useRef, useMemo } from 'react';
 import { Table, Spinner } from 'react-bootstrap';
 import Pagination from '../components/Pagination';
+import Helmet from '../components/Helmet';
 import { useAppSelector } from '../utilities/hooks';
 import { selectors } from '../slices/logsSlice';
 import type { Log } from '../types/Log';
@@ -45,11 +45,7 @@ const LogsPage = () => {
     </div>
   ) : (
     <div className="col-12 my-4">
-      <Helmet>
-        <title>Логи</title>
-        <meta name="description" content="Страница с логами" />
-        <link rel="canonical" href={window.location.href} />
-      </Helmet>
+      <Helmet title="Логи" description="Страница с логами" />
       <Table striped bordered hover ref={scrollRef}>
         <thead>
           <tr className="text-center">

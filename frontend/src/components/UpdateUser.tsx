@@ -4,7 +4,7 @@ import {
 } from 'react-bootstrap';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFormik, FormikContextType } from 'formik';
+import { useFormik, FormikProps } from 'formik';
 import { Pencil, CheckLg, XLg } from 'react-bootstrap-icons';
 import axios from 'axios';
 import { capitalize, toLower } from 'lodash';
@@ -15,6 +15,8 @@ import createUserValidation from '../validations/validations';
 import routes from '../routes';
 import { useAppDispatch } from '../utilities/hooks';
 import formClass from '../utilities/formClass';
+import textFieldGen from '../utilities/textFieldGen';
+import checkFieldsEdit from '../utilities/checkFieldsEdit';
 import type { FormikUser, PropsUser } from '../types/User';
 
 const UpdateUser = ({ user }: PropsUser) => {
@@ -37,7 +39,7 @@ const UpdateUser = ({ user }: PropsUser) => {
     username, email, password,
   };
 
-  const setDefaultValue = (field: string, form: FormikContextType<FormikUser>) => {
+  const setDefaultValue = (field: string, form: FormikProps<FormikUser>) => {
     form.resetForm({ values: initialValues, submitCount: 0 });
     if (field === 'username') {
       setUsernameEdit(false);
@@ -49,22 +51,17 @@ const UpdateUser = ({ user }: PropsUser) => {
     }
   };
 
-  const formik = useFormik<FormikUser & { [key: string]: unknown }>({
+  const formik = useFormik<FormikUser>({
     initialValues,
     validationSchema: createUserValidation,
     onSubmit: async (values) => {
       try {
-        if (values.username) {
-          values.username = capitalize(values.username);
-        }
-        if (values.email) {
-          values.email = toLower(values.email);
-        }
+        values.username = capitalize(values.username);
+        values.email = toLower(values.email);
+
         const initialObject: object = {};
         const changedValue = Object.keys(values).reduce((acc, key) => {
-          if (initialValues[key] === values[key]) {
-            return acc;
-          }
+          if (initialValues[key] === values[key]) return acc;
           return { [key]: values[key] };
         }, initialObject);
 
@@ -87,52 +84,26 @@ const UpdateUser = ({ user }: PropsUser) => {
     },
   });
 
+  const usernameControl = { edit: usernameEdit, field: 'username', ref: usernameRef };
+  const emailControl = { edit: emailEdit, field: 'email', ref: emailRef };
+  const passwordControl = { edit: passwordEdit, field: 'password', ref: passwordRef };
+
+  const controlEditField = (field: string) => {
+    if (field === 'username') return { ...usernameControl, setEdit: setUsernameEdit, value: username };
+    if (field === 'email') return { ...emailControl, setEdit: setEmailEdit, value: email };
+    return { ...passwordControl, setEdit: setPasswordEdit, value: password };
+  };
+
   useEffect(() => {
-    if (usernameEdit) {
-      if (emailEdit) {
-        setDefaultValue('email', formik);
-      }
-      if (passwordEdit) {
-        setDefaultValue('password', formik);
-      }
-      if (usernameRef.current) {
-        usernameRef.current.select();
-      }
-    } else {
-      setDefaultValue('username', formik);
-    }
+    checkFieldsEdit(formik, setDefaultValue, usernameControl, emailControl, passwordControl);
   }, [usernameEdit]);
 
   useEffect(() => {
-    if (emailEdit) {
-      if (usernameEdit) {
-        setDefaultValue('username', formik);
-      }
-      if (passwordEdit) {
-        setDefaultValue('password', formik);
-      }
-      if (emailRef.current) {
-        emailRef.current.select();
-      }
-    } else {
-      setDefaultValue('email', formik);
-    }
+    checkFieldsEdit(formik, setDefaultValue, emailControl, usernameControl, passwordControl);
   }, [emailEdit]);
 
   useEffect(() => {
-    if (passwordEdit) {
-      if (emailEdit) {
-        setDefaultValue('email', formik);
-      }
-      if (usernameEdit) {
-        setDefaultValue('username', formik);
-      }
-      if (passwordRef.current) {
-        passwordRef.current.select();
-      }
-    } else {
-      setDefaultValue('password', formik);
-    }
+    checkFieldsEdit(formik, setDefaultValue, passwordControl, emailControl, usernameControl);
   }, [passwordEdit]);
 
   return (
@@ -140,192 +111,76 @@ const UpdateUser = ({ user }: PropsUser) => {
       onSubmit={formik.handleSubmit}
       className="col-12 col-xl-10 col-xxl-7 my-2"
     >
-      <Form.Group className={formClass('username', formik)} controlId="username">
-        <Form.Label className="col-12 col-xl-3 text-start">Имя</Form.Label>
-        <InputGroup>
-          <Form.Control
-            ref={usernameRef}
-            onChange={formik.handleChange}
-            onBlur={() => {
-              if (formik.values.username === username) {
-                setDefaultValue('username', formik);
-              }
-            }}
-            isInvalid={!!(formik.errors.username && formik.submitCount)}
-            autoComplete="on"
-            type="text"
-            value={formik.values.username}
-            data-testid="username-field"
-            name="username"
-            placeholder="Введите имя"
-            disabled={!usernameEdit}
-          />
-          {usernameEdit ? (
-            <InputGroup.Text
-              id="username"
-              as="button"
-              data-testid="username"
-              type="submit"
-              disabled={formik.isSubmitting}
-            >
-              {formik.isSubmitting
-                ? (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    variant="success"
-                  />
-                )
-                : <CheckLg className="fw-bold fs-4 text-success" />}
+      {Object.keys(formik.values).map((key) => {
+        const { label, placeholder, type } = textFieldGen(key);
+        const {
+          edit, ref, setEdit, value,
+        } = controlEditField(key);
+        return (
+          <Form.Group className={formClass(key, formik)} controlId={key} key={key}>
+            <Form.Label className="col-12 col-xl-3 text-start">{label}</Form.Label>
+            <InputGroup>
+              <Form.Control
+                ref={ref}
+                onChange={formik.handleChange}
+                onBlur={() => {
+                  if (formik.values[key] === value) {
+                    setDefaultValue(key, formik);
+                  }
+                }}
+                isInvalid={!!(formik.errors[key] && formik.submitCount)}
+                autoComplete="on"
+                type={type}
+                value={formik.values[key]}
+                data-testid={`${key}-field`}
+                name={key}
+                placeholder={placeholder}
+                disabled={!edit}
+              />
+              {edit ? (
+                <InputGroup.Text
+                  id={key}
+                  as="button"
+                  data-testid={key}
+                  type="submit"
+                  disabled={formik.isSubmitting}
+                >
+                  {formik.isSubmitting
+                    ? (
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        variant="success"
+                      />
+                    )
+                    : <CheckLg className="fw-bold fs-4 text-success" />}
+                </InputGroup.Text>
+              ) : (
+                <InputGroup.Text
+                  id={key}
+                  role="button"
+                  data-testid={key}
+                  onClick={() => setEdit(true)}
+                >
+                  <Pencil />
+                </InputGroup.Text>
+              )}
+              {edit
+            && (
+            <InputGroup.Text role="button" data-testid={`${key}-close`} onClick={() => setDefaultValue(key, formik)}>
+              <XLg className="fw-bold fs-5 text-danger" />
             </InputGroup.Text>
-          ) : (
-            <InputGroup.Text
-              id="username"
-              role="button"
-              data-testid="username"
-              onClick={() => setUsernameEdit(true)}
-            >
-              <Pencil />
-            </InputGroup.Text>
-          )}
-          {usernameEdit
-          && (
-          <InputGroup.Text role="button" onClick={() => setDefaultValue('username', formik)}>
-            <XLg className="fw-bold fs-5 text-danger" />
-          </InputGroup.Text>
-          )}
-          <Form.Control.Feedback type="invalid" tooltip>
-            {formik.errors.username}
-          </Form.Control.Feedback>
-        </InputGroup>
-      </Form.Group>
-      <Form.Group className={formClass('email', formik)} controlId="email">
-        <Form.Label className="col-12 col-xl-3 text-start">Почта</Form.Label>
-        <InputGroup>
-          <Form.Control
-            ref={emailRef}
-            onChange={formik.handleChange}
-            onBlur={() => {
-              if (formik.values.email === email) {
-                setDefaultValue('email', formik);
-              }
-            }}
-            isInvalid={!!(formik.errors.email && formik.submitCount)}
-            autoComplete="on"
-            type="email"
-            value={formik.values.email}
-            data-testid="email-field"
-            name="email"
-            placeholder="Введите почту"
-            disabled={!emailEdit}
-          />
-          {emailEdit ? (
-            <InputGroup.Text
-              id="email"
-              data-testid="email"
-              as="button"
-              type="submit"
-              disabled={formik.isSubmitting}
-            >
-              {formik.isSubmitting
-                ? (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    variant="success"
-                  />
-                )
-                : <CheckLg className="fw-bold fs-4 text-success" />}
-            </InputGroup.Text>
-          ) : (
-            <InputGroup.Text
-              id="email"
-              data-testid="email"
-              role="button"
-              onClick={() => setEmailEdit(true)}
-            >
-              <Pencil />
-            </InputGroup.Text>
-          )}
-          {emailEdit
-          && (
-          <InputGroup.Text role="button" onClick={() => setDefaultValue('email', formik)}>
-            <XLg className="fw-bold fs-5 text-danger" />
-          </InputGroup.Text>
-          )}
-          <Form.Control.Feedback type="invalid" tooltip>
-            {formik.errors.email}
-          </Form.Control.Feedback>
-        </InputGroup>
-      </Form.Group>
-      <Form.Group className={formClass('password', formik)} controlId="password">
-        <Form.Label className="col-12 col-xl-3 text-start">Пароль</Form.Label>
-        <InputGroup>
-          <Form.Control
-            ref={passwordRef}
-            onChange={formik.handleChange}
-            onBlur={() => {
-              if (formik.values.password === password) {
-                setDefaultValue('password', formik);
-              }
-            }}
-            isInvalid={!!(formik.errors.password && formik.submitCount)}
-            autoComplete="off"
-            type="password"
-            value={formik.values.password}
-            data-testid="password-field"
-            placeholder="Введите пароль"
-            name="password"
-            disabled={!passwordEdit}
-          />
-          {passwordEdit ? (
-            <InputGroup.Text
-              id="password"
-              data-testid="password"
-              as="button"
-              type="submit"
-              disabled={formik.isSubmitting}
-            >
-              {formik.isSubmitting
-                ? (
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    variant="success"
-                  />
-                )
-                : <CheckLg className="fw-bold fs-4 text-success" />}
-            </InputGroup.Text>
-          ) : (
-            <InputGroup.Text
-              id="password"
-              data-testid="password"
-              role="button"
-              onClick={() => setPasswordEdit(true)}
-            >
-              <Pencil />
-            </InputGroup.Text>
-          )}
-          {passwordEdit
-          && (
-          <InputGroup.Text role="button" data-testid="password-close" onClick={() => setDefaultValue('password', formik)}>
-            <XLg className="fw-bold fs-5 text-danger" />
-          </InputGroup.Text>
-          )}
-          <Form.Control.Feedback type="invalid" tooltip>
-            {formik.errors.password}
-          </Form.Control.Feedback>
-        </InputGroup>
-      </Form.Group>
+            )}
+              <Form.Control.Feedback type="invalid" tooltip>
+                {formik.errors[key]}
+              </Form.Control.Feedback>
+            </InputGroup>
+          </Form.Group>
+        );
+      })}
       <Button size="sm" variant="warning" className="mt-4" onClick={() => navigate(-1)}>Назад</Button>
     </Form>
   );

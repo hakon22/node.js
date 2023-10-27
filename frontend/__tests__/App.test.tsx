@@ -11,6 +11,12 @@ import store from '../src/slices/index';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+const checkCountElements = async (testId: string, toHaveLength: number) => waitFor(async () => {
+  const items = await screen.findAllByTestId(testId);
+
+  expect(items).toHaveLength(toHaveLength);
+});
+
 window.HTMLElement.prototype.scrollIntoView = () => {};
 
 const createdAt = new Date().toISOString();
@@ -279,11 +285,7 @@ describe('testing searchForId in logs', () => {
     await userEvent.type(inputSearch, '13');
     await userEvent.keyboard('{Enter}');
 
-    await waitFor(async () => {
-      const items = await screen.findAllByTestId('tr');
-
-      expect(items).toHaveLength(4);
-    });
+    await checkCountElements('tr', 4);
   });
 
   it('search #5', async () => {
@@ -294,11 +296,7 @@ describe('testing searchForId in logs', () => {
     await userEvent.type(inputSearch, '5');
     await userEvent.keyboard('{Enter}');
 
-    await waitFor(async () => {
-      const items = await screen.findAllByTestId('tr');
-
-      expect(items).toHaveLength(1);
-    });
+    await checkCountElements('tr', 1);
   });
 
   it('cancel search', async () => {
@@ -309,10 +307,6 @@ describe('testing searchForId in logs', () => {
     await userEvent.clear(inputSearch);
     await userEvent.keyboard('{Enter}');
 
-    await waitFor(async () => {
-      const items = await screen.findAllByTestId('tr');
-
-      expect(items).toHaveLength(10);
-    });
+    await checkCountElements('tr', 10);
   });
 });

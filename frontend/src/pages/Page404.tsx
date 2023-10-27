@@ -1,13 +1,9 @@
-import { Helmet } from 'react-helmet';
 import { Card } from 'react-bootstrap';
+import Helmet from '../components/Helmet';
 
 const Page404 = () => (
   <div className="col-12 col-md-8 mt-4">
-    <Helmet>
-      <title>Ошибка 404</title>
-      <meta name="description" content="Страница не найдена" />
-      <link rel="canonical" href={window.location.href} />
-    </Helmet>
+    <Helmet title="Ошибка 404" description="Страница не найдена" />
     <Card border="warning" bg="light" className="text-center">
       <Card.Header>Ошибка 404</Card.Header>
       <Card.Body>

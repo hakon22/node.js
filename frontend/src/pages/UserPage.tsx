@@ -1,11 +1,11 @@
 /* eslint-disable no-nested-ternary */
-import { Helmet } from 'react-helmet';
 import { useParams, Navigate } from 'react-router-dom';
 import { Card } from 'react-bootstrap';
 import { selectors } from '../slices/userSlice';
 import routes from '../routes';
 import { useAppSelector } from '../utilities/hooks';
 import UpdateUser from '../components/UpdateUser';
+import Helmet from '../components/Helmet';
 import type { User } from '../types/User';
 
 const UserPage = () => {
@@ -16,15 +16,7 @@ const UserPage = () => {
 
   return user ? (
     <div className="col-12 col-md-8 mt-4">
-      <Helmet>
-        <title>
-          Пользователь
-          {' '}
-          {user.username}
-        </title>
-        <meta name="description" content={`Информация пользователя ${user.username}`} />
-        <link rel="canonical" href={window.location.href} />
-      </Helmet>
+      <Helmet title={`Пользователь ${user.username}`} description={`Информация пользователя ${user.username}`} />
       <Card border="warning" bg="light" className="text-center mb-4 d-flex justify-content-center align-items-center">
         <Card.Header className="fs-4 col-12">{user.username}</Card.Header>
         <Card.Body className="col-12 col-xl-8 d-flex justify-content-center">
