@@ -25,6 +25,7 @@ jobs:
       
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        JACOCO_SOURCE_PATH: frontend
       with:
           coverageCommand: make test-coverage
           debug: true
