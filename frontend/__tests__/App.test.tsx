@@ -4,12 +4,41 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { capitalize, toLower } from 'lodash';
 import axios from 'axios';
 import App from '../src/components/App';
 import store from '../src/slices/index';
 
+type changeUserDataArgs = (
+  field: string,
+  value: string,
+  input: HTMLElement,
+) => void;
+
+type UserArgs = (
+  username: string,
+  email: string,
+  password: string,
+) => Promise<void>;
+
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+const createdAt = new Date().toISOString();
+const updatedAt = new Date().toISOString();
+
+window.HTMLElement.prototype.scrollIntoView = () => {};
+
+let response: { data: { code: number, users?: object, logs?: object, user?: object, log?: object }};
+const errorResponce = new Error();
+
+let userId = 2;
+let logId = 2;
+
+const increaseIds = () => {
+  userId += 1;
+  logId += 1;
+};
 
 const checkCountElements = async (testId: string, toHaveLength: number) => waitFor(async () => {
   const items = await screen.findAllByTestId(testId);
@@ -17,13 +46,84 @@ const checkCountElements = async (testId: string, toHaveLength: number) => waitF
   expect(items).toHaveLength(toHaveLength);
 });
 
-window.HTMLElement.prototype.scrollIntoView = () => {};
+const changeValue = (value: string, field: string) => {
+  if (field === 'username') {
+    return capitalize(value);
+  }
+  if (field === 'email') {
+    return toLower(value);
+  }
+  return value;
+};
 
-const createdAt = new Date().toISOString();
-const updatedAt = new Date().toISOString();
+const createUser: UserArgs = async (username, email, password) => {
+  const finalUsername = changeValue(username, 'username');
+  const finalEmail = changeValue(email, 'email');
+  const user = {
+    id: userId, username: finalUsername, email: finalEmail, password: '111111', createdAt, updatedAt,
+  };
+  const log = {
+    id: logId, userId, message: `Создан пользователь ${finalUsername}`, createdAt, updatedAt,
+  };
+  response = { data: { code: 1, user, log } };
+  mockedAxios.post.mockResolvedValue(response);
 
-let response: { data: { code: number, users?: object, logs?: object, user?: object, log?: object }};
-const errorResponce = new Error();
+  await userEvent.click(screen.getByText('Главная'));
+
+  const inputName = screen.getByLabelText('Имя');
+  const inputEmail = screen.getByLabelText('Почта');
+  const inputPassword = screen.getByLabelText('Пароль');
+
+  if (userId === 2) {
+    await userEvent.click(screen.getByText('Добавить пользователя'));
+
+    expect(screen.getByTestId('username-invalid')).toHaveTextContent('Обязательное поле');
+    expect(screen.getByTestId('email-invalid')).toHaveTextContent('Обязательное поле');
+    expect(screen.getByTestId('password-invalid')).toHaveTextContent('Обязательное поле');
+  }
+
+  await userEvent.type(inputName, username);
+  await userEvent.type(inputEmail, email);
+  await userEvent.type(inputPassword, password);
+
+  await userEvent.click(screen.getByText('Добавить пользователя'));
+};
+
+const changeUserData: changeUserDataArgs = async (field, value, input) => {
+  const finalValue = changeValue(value, field);
+  const log = {
+    id: logId, userId, message: `Пользователь #${userId} изменил ${field} на ${finalValue}`, createdAt, updatedAt,
+  };
+  response = { data: { code: 1, log } };
+  mockedAxios.post.mockResolvedValue(value === 'valueForError' ? errorResponce : response);
+
+  expect(screen.getByTestId(`${field}-field`)).toBeDisabled();
+
+  await userEvent.click(screen.getByTestId(field));
+
+  expect(screen.getByTestId(`${field}-field`)).toBeEnabled();
+
+  await userEvent.clear(screen.getByTestId(`${field}-field`));
+
+  await userEvent.type(input, value);
+
+  await userEvent.click(screen.getByTestId(field));
+
+  if (value === 'valueForError') {
+    expect(screen.getByTestId('password-field')).toBeEnabled();
+    expect(await screen.findByText('Неизвестная ошибка')).toBeInTheDocument();
+    expect(store.getState().users.entities[13]?.password).toBe('superpass');
+  } else {
+    expect(screen.getByTestId(`${field}-field`)).toBeDisabled();
+    expect(await screen.findByText('Данные успешно изменены')).toBeInTheDocument();
+    expect(screen.getByTestId(`${field}-field`)).toHaveValue(finalValue);
+    expect(store.getState().users.entities[userId]?.[field]).toBe(finalValue);
+
+    await userEvent.click(screen.getByText('Логи'));
+
+    expect(screen.getByText(log.message)).toHaveTextContent(log.message);
+  }
+};
 
 beforeEach(() => {
   const users = [{
@@ -55,26 +155,9 @@ describe('testing data', () => {
   });
 
   it('create user', async () => {
-    const user = {
-      id: 2, username: 'Алёша', email: 'hakon1@mail.ru', password: '111111', createdAt, updatedAt,
-    };
-    const log = {
-      id: 2, userId: 2, message: 'Создан пользователь Алёша', createdAt, updatedAt,
-    };
-    response = { data: { code: 1, user, log } };
-    mockedAxios.post.mockResolvedValue(response);
+    await createUser('Алёша', 'hakon1@mail.ru', '111111');
+    increaseIds();
 
-    await userEvent.click(screen.getByText('Главная'));
-
-    const inputName = screen.getByLabelText('Имя');
-    const inputEmail = screen.getByLabelText('Почта');
-    const inputPassword = screen.getByLabelText('Пароль');
-
-    await userEvent.type(inputName, 'Алёша');
-    await userEvent.type(inputEmail, 'hakon1@mail.ru');
-    await userEvent.type(inputPassword, '111111');
-
-    await userEvent.click(screen.getByText('Добавить пользователя'));
     await userEvent.click(screen.getByText('Пользователи'));
 
     expect(screen.getByText('alex')).toHaveTextContent('alex');
@@ -91,41 +174,15 @@ describe('testing data', () => {
 
 describe('testing pagination', () => {
   it('create many users and pagination', async () => {
-    let userId = 3;
-    const createManyUsers = async (id: number) => {
-      const user = {
-        id, username: 'Алёша', email: 'hakon1@mail.ru', password: '111111', createdAt, updatedAt,
-      };
-      const log = {
-        id, userId: id, message: 'Создан пользователь Алёша', createdAt, updatedAt,
-      };
-      response = { data: { code: 1, user, log } };
-      mockedAxios.post.mockResolvedValue(response);
-
-      const inputName = screen.getByLabelText('Имя');
-      const inputEmail = screen.getByLabelText('Почта');
-      const inputPassword = screen.getByLabelText('Пароль');
-
-      await userEvent.click(screen.getByText('Добавить пользователя'));
-
-      expect(screen.getByTestId('username-invalid')).toHaveTextContent('Обязательное поле');
-      expect(screen.getByTestId('email-invalid')).toHaveTextContent('Обязательное поле');
-      expect(screen.getByTestId('password-invalid')).toHaveTextContent('Обязательное поле');
-
-      await userEvent.type(inputName, 'Алёша');
-      await userEvent.type(inputEmail, 'hakon1@mail.ru');
-      await userEvent.type(inputPassword, '111111');
-
-      await userEvent.click(screen.getByText('Добавить пользователя'));
+    const createManyUsers: UserArgs = async (username, email, password) => {
+      await createUser(`${username}-${userId}`, email, password);
       if (userId < 13) {
-        userId += 1;
-        await createManyUsers(userId);
+        increaseIds();
+        await createManyUsers(username, email, password);
       }
     };
 
-    await userEvent.click(screen.getByText('Главная'));
-
-    await createManyUsers(userId);
+    await createManyUsers('Алёша', 'hakon1@mail.ru', '123456');
 
     await userEvent.click(screen.getByText('Логи'));
     await userEvent.click(screen.getByRole('button', { name: '2' }));
@@ -135,125 +192,32 @@ describe('testing pagination', () => {
 });
 
 describe('testing user update', () => {
-  it('username update', async () => {
-    const log = {
-      id: 14, userId: 13, message: 'Пользователь #13 изменил username на Валентин', createdAt, updatedAt,
-    };
-    response = { data: { code: 1, log } };
-    mockedAxios.post.mockResolvedValue(response);
-
+  beforeEach(async () => {
+    logId += 1;
     await userEvent.click(screen.getByText('Пользователи'));
-    await userEvent.click(screen.getByText('13'));
-
-    expect(screen.getByTestId('username-field')).toBeDisabled();
-
-    await userEvent.click(screen.getByTestId('username'));
-
-    expect(screen.getByTestId('username-field')).toBeEnabled();
-
-    await userEvent.clear(screen.getByTestId('username-field'));
-
-    const inputName = screen.getByLabelText('Имя');
-    await userEvent.type(inputName, 'валентин');
-
-    await userEvent.click(screen.getByTestId('username'));
-
-    expect(screen.getByTestId('username-field')).toBeDisabled();
-    expect(await screen.findByText('Данные успешно изменены')).toBeInTheDocument();
-    expect(screen.getByText('Валентин')).toHaveTextContent('Валентин');
-    expect(store.getState().users.entities[13]?.username).toBe('Валентин');
-
-    await userEvent.click(screen.getByText('Логи'));
-
-    expect(screen.getByText('Пользователь #13 изменил username на Валентин')).toHaveTextContent('Пользователь #13 изменил username на Валентин');
+  });
+  it('username update', async () => {
+    await userEvent.click(screen.getByText('Алёша-13'));
+    const input = screen.getByLabelText('Имя');
+    await changeUserData('username', 'валентин', input);
   });
 
   it('email update', async () => {
-    const log = {
-      id: 15, userId: 13, message: 'Пользователь #13 изменил email на valentin@mail.ru', createdAt, updatedAt,
-    };
-    response = { data: { code: 1, log } };
-    mockedAxios.post.mockResolvedValue(response);
-
-    await userEvent.click(screen.getByText('Пользователи'));
     await userEvent.click(screen.getByText('Валентин'));
-
-    expect(screen.getByTestId('email-field')).toBeDisabled();
-
-    await userEvent.click(screen.getByTestId('email'));
-
-    expect(screen.getByTestId('email-field')).toBeEnabled();
-
-    await userEvent.clear(screen.getByTestId('email-field'));
-
-    const inputEmail = screen.getByLabelText('Почта');
-    await userEvent.type(inputEmail, 'VaLeNtIn@mail.ru');
-
-    await userEvent.click(screen.getByTestId('email'));
-
-    expect(screen.getByTestId('email-field')).toBeDisabled();
-    expect(await screen.findByText('Данные успешно изменены')).toBeInTheDocument();
-    expect(store.getState().users.entities[13]?.email).toBe('valentin@mail.ru');
-
-    await userEvent.click(screen.getByText('Логи'));
-
-    expect(screen.getByText('Пользователь #13 изменил email на valentin@mail.ru')).toHaveTextContent('Пользователь #13 изменил email на valentin@mail.ru');
+    const input = screen.getByLabelText('Почта');
+    await changeUserData('email', 'VaLeNtIn@mAiL.rU', input);
   });
 
   it('password update', async () => {
-    const log = {
-      id: 16, userId: 13, message: 'Пользователь #13 изменил password на superpass', createdAt, updatedAt,
-    };
-    response = { data: { code: 1, log } };
-    mockedAxios.post.mockResolvedValue(response);
-
-    await userEvent.click(screen.getByText('Пользователи'));
-    await userEvent.click(screen.getByText('Валентин'));
-
-    expect(screen.getByTestId('password-field')).toBeDisabled();
-
-    await userEvent.click(screen.getByTestId('password'));
-
-    expect(screen.getByTestId('password-field')).toBeEnabled();
-
-    await userEvent.clear(screen.getByTestId('password-field'));
-
-    const inputPassword = screen.getByLabelText('Пароль');
-    await userEvent.type(inputPassword, 'superpass');
-
-    await userEvent.click(screen.getByTestId('password'));
-
-    expect(screen.getByTestId('password-field')).toBeDisabled();
-    expect(await screen.findByText('Данные успешно изменены')).toBeInTheDocument();
-    expect(store.getState().users.entities[13]?.password).toBe('superpass');
-
-    await userEvent.click(screen.getByText('Логи'));
-
-    expect(screen.getByText('Пользователь #13 изменил password на superpass')).toHaveTextContent('Пользователь #13 изменил password на superpass');
+    await userEvent.click(screen.getByText('valentin@mail.ru'));
+    const input = screen.getByLabelText('Пароль');
+    await changeUserData('password', 'superpass', input);
   });
 
   it('update password with error', async () => {
-    mockedAxios.post.mockResolvedValue(errorResponce);
-
-    await userEvent.click(screen.getByText('Пользователи'));
-    await userEvent.click(screen.getByText('Валентин'));
-
-    expect(screen.getByTestId('password-field')).toBeDisabled();
-
-    await userEvent.click(screen.getByTestId('password'));
-
-    expect(screen.getByTestId('password-field')).toBeEnabled();
-
-    await userEvent.clear(screen.getByTestId('password-field'));
-
-    const inputPassword = screen.getByLabelText('Пароль');
-    await userEvent.type(inputPassword, 'superpass2');
-
-    await userEvent.click(screen.getByTestId('password'));
-
-    expect(screen.getByTestId('password-field')).toBeEnabled();
-    expect(await screen.findByText('Неизвестная ошибка')).toBeInTheDocument();
-    expect(store.getState().users.entities[13]?.password).toBe('superpass');
+    await userEvent.click(screen.getByText('superpass'));
+    const input = screen.getByLabelText('Пароль');
+    await changeUserData('password', 'valueForError', input);
   });
 });
 
@@ -274,10 +238,12 @@ describe('testing userPage', () => {
 });
 
 describe('testing searchForId in logs', () => {
-  it('search #13', async () => {
+  let inputSearch: HTMLElement;
+  beforeEach(async () => {
     await userEvent.click(screen.getByText('Логи'));
-
-    const inputSearch = screen.getByLabelText('Введите id пользователя');
+    inputSearch = screen.getByLabelText('Введите id пользователя');
+  });
+  it('search #13', async () => {
     await userEvent.type(inputSearch, 'text');
 
     expect(inputSearch).toHaveValue('');
@@ -289,10 +255,6 @@ describe('testing searchForId in logs', () => {
   });
 
   it('search #5', async () => {
-    await userEvent.click(screen.getByText('Логи'));
-
-    const inputSearch = screen.getByLabelText('Введите id пользователя');
-
     await userEvent.type(inputSearch, '5');
     await userEvent.keyboard('{Enter}');
 
@@ -300,10 +262,6 @@ describe('testing searchForId in logs', () => {
   });
 
   it('cancel search', async () => {
-    await userEvent.click(screen.getByText('Логи'));
-
-    const inputSearch = screen.getByLabelText('Введите id пользователя');
-
     await userEvent.clear(inputSearch);
     await userEvent.keyboard('{Enter}');
 
