@@ -28,5 +28,5 @@ jobs:
       with:
           coverageCommand: make test-coverage
           coverageLocations: |
-            ${{github.workspace}}/frontend/coverage/lcov.info:lcov
+            ${{github.workspace}}/coverage/lcov.info:lcov
           debug: true
