@@ -1,3 +1,6 @@
+![workflow](https://github.com/hakon22/node.js/actions/workflows/makefile.yml/badge.svg)
+[![Maintainability](https://api.codeclimate.com/v1/badges/bd671ea507ef9c8e7f3a/maintainability)](https://codeclimate.com/github/hakon22/node.js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/bd671ea507ef9c8e7f3a/test_coverage)](https://codeclimate.com/github/hakon22/node.js/test_coverage)
 # Node.js + React TypeScript project
 ## with React/React-Router/Redux-Toolkit, Jest, Bootstrap, Express/PostgreSQL
 
